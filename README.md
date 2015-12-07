@@ -2,6 +2,8 @@
 
 Provides helpers to make it easy to add a "dropzone" into a webapp and pass the the dropped files onto the [FileReader library](https://github.com/simonh1000/file-reader) to read.
 
+The library does not have a dependency on FileReader but at the moment using it with FileReader is the primary intended use case.
+
 A full example of how to use this library is provided in the FileReader library. The main points are:
 
 ### Store the DropZone.Model as part of your model
@@ -51,6 +53,9 @@ to do to make sure it works as a DropZone is add the attributes you get from a c
 dropZoneEventHandlers. If you like you can use the isHovering method to render your dropzone
 differently when the user is hovering over it with a DnD operation.
 
+dropZoneEventHandlers takes a Json.decoder to extract the "payload" from the native JS drop event.
+We use the FileReader.parseDroppedFiles here to extract a List of native JS File objects.
+
 ```Elm
 -- Write a function that renders your dropzone and use dropzoneEventHandlers to 
 -- turn it into a dropzone. 
@@ -58,7 +63,7 @@ dropZoneView : Signal.Address Action -> Model -> Html
 dropZoneView address model =
     div 
       ( (hoveringDependentStyles model.dropZoneModel)
-      :: dragDropEventHandlers (Signal.forwardTo address DnD))
+      :: dropZoneEventHandlers FileReader.parseDroppedFiles (Signal.forwardTo address DnD))
       []
 
 hoveringDependentStyles : DropZone.Model -> Html.Attribute
