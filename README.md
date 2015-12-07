@@ -1,6 +1,6 @@
 #Elm Dropzone
 
-Provides helpers to make it easy to add a "dropzone" into a webapp and pass the the dropped files onto the FileReader library to read.
+Provides helpers to make it easy to add a "dropzone" into a webapp and pass the the dropped files onto the [FileReader library](https://github.com/simonh1000/file-reader) to read.
 
 A full example of how to use this library is provided in the FileReader library. The main points are:
 
