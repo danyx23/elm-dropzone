@@ -1,21 +1,17 @@
-{-
-Based on original code from Daniel Bachler (danyx23)
--}
-
 module DropZone
   ( Model
   , Action(Drop)
   , isHovering
   , init
   , update
-  , dragDropEventHandlers
+  , dropZoneEventHandlers
   ) where
 
 {-| This library makes it easier to use Html5 Drag/Drop events when you want
 to support dropping of files into the webpage. 
 
 # Main DnD support
-@docs dragDropEventHandlers
+@docs dropZoneEventHandlers
 
 # Drop action
 @docs Action
@@ -24,7 +20,7 @@ to support dropping of files into the webpage.
 @docs Model
 
 # Helper functions
-@docs, init, update
+@docs init, update, isHovering
 -}
 
 import Html exposing (Attribute)
@@ -50,12 +46,30 @@ type HoverState
     = Normal
     | Hovering
 
-
-
+{-| Opaque model of the DropZone.
+-}
 type alias Model = {
   hoverState: HoverState -- set to Hovering if the user is hovering with content over the drop zone
 }
 
+{-| Function that tells you if the user is currently hovering over the dropzone
+with a Drag operation. 
+
+This information is stored inside the model and thus
+isHovering can only give you a correct information if you attached the event
+handlers to the dropzone you render and make sure that Dropzone Actions are "routed"
+to the update function of the DropZone
+
+    getDropZoneAttributes : Signal.Address Action -> DropZone.Model -> List Html.Attribute
+    getDropZoneAttributes address dropZoneModel =
+        ( if (DropZone.isHovering dropZoneModel) then
+            dropZoneDefault
+          else
+            dropZoneHover
+        )
+        ::
+        dragDropEventHandlers (Signal.forwardTo address DnD)
+-}
 isHovering : Model -> Bool
 isHovering model =
   model.hoverState == Hovering
@@ -63,7 +77,7 @@ isHovering model =
 {-| Initializes the HoverState to Normal
 -}
 init : Model
-init = Normal
+init = { hoverState = Normal }
 
 -- UPDATE
 {-| The Drop actions is tagged with a (List NativeFile) that represent the files
@@ -81,27 +95,29 @@ update : Action -> Model -> Model
 update action model =
     case action of
         DragEnter ->
-            Hovering
+            {model | hoverState = Hovering }
         DragLeave ->
-            Normal
+            {model | hoverState = Normal }
         Drop files ->
-            Normal
+            {model | hoverState = Normal }
 
 {-| Returns a list of Attributes to add to an element to turn it into a 
-"Drpozone". 
+"Drpozone" by registering the required event handlers.
 
     -- Example view, renders a div that acts as a dropzone by 
-    -- adding the dragDropEventHandlers
+    -- adding the dragDropEventHandlers. Note that DropZoneAction 
+    -- would be one of your components Actions, tagged with 
+    -- the Action of the Dropzone
     view : Signal.Address Action -> Model -> Html
     view address model =
         div
-        (  dropZoneStyle model.hoverState 
-        :: dragDropEventHandlers (Signal.forwardTo address DnD))    
+        (  dropZoneStyle model.dropZoneModel 
+        :: dragDropEventHandlers (Signal.forwardTo address DropZoneAction))    
         [ renderImageOrPrompt model
         ]
 -}
-dragDropEventHandlers : Signal.Address Action -> List Attribute
-dragDropEventHandlers address =
+dropZoneEventHandlers : Signal.Address Action -> List Attribute
+dropZoneEventHandlers address =
     [ onDragEnter address DragEnter
     , onDragLeave address DragLeave
     , onDragOver address DragEnter
