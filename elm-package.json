@@ -1,14 +1,14 @@
 {
     "version": "1.0.0",
-    "summary": "Modelling the most common Mime Types as union types",
-    "repository": "https://github.com/danyx23/elm-mimetype.git",
-    "author": "Daniel Blacher",
+    "summary": "Easily create Dropzones in webapps that allow users to drop files into the browser",
+    "repository": "https://github.com/danyx23/elm-dropzone.git",
+    "author": "Daniel Blacher, Simon Hampton",
     "license": "BSD3",
     "source-directories": [
         ".", "./src"
     ],
     "exposed-modules": [
-        "MimeType"
+        "DropZone"
     ],
     "native-modules": false,
     "dependencies": {
