@@ -2,9 +2,10 @@
 Based on original code from Daniel Bachler (danyx23)
 -}
 
-module DragDrop
-  ( HoverState(..)
+module DropZone
+  ( Model
   , Action(Drop)
+  , isHovering
   , init
   , update
   , dragDropEventHandlers
@@ -19,8 +20,8 @@ to support dropping of files into the webpage.
 # Drop action
 @docs Action
 
-# HoverState
-@docs HoverState
+# Model
+@docs Model
 
 # Helper functions
 @docs, init, update
@@ -49,7 +50,15 @@ type HoverState
     = Normal
     | Hovering
 
-type alias Model = HoverState -- set to Hovering if the user is hovering with content over the drop zone
+
+
+type alias Model = {
+  hoverState: HoverState -- set to Hovering if the user is hovering with content over the drop zone
+}
+
+isHovering : Model -> Bool
+isHovering model =
+  model.hoverState == Hovering
 
 {-| Initializes the HoverState to Normal
 -}
