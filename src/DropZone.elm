@@ -8,7 +8,7 @@ module DropZone
   ) where
 
 {-| This library makes it easier to use Html5 Drag/Drop events when you want
-to support dropping of files into the webpage. 
+to support dropping of files into a webpage. 
 
 # Main DnD support
 @docs dropZoneEventHandlers
@@ -63,9 +63,9 @@ to the update function of the DropZone
     getDropZoneAttributes : Signal.Address Action -> DropZone.Model -> List Html.Attribute
     getDropZoneAttributes address dropZoneModel =
         ( if (DropZone.isHovering dropZoneModel) then
-            dropZoneDefault
+            style [( "border", "3px dashed red")]
           else
-            dropZoneHover
+            style [( "border", "3px dashed steelblue")]
         )
         ::
         dragDropEventHandlers (Signal.forwardTo address DnD)
@@ -74,7 +74,7 @@ isHovering : Model -> Bool
 isHovering model =
   model.hoverState == Hovering
 
-{-| Initializes the HoverState to Normal
+{-| Initializes the Model
 -}
 init : Model
 init = { hoverState = Normal }
@@ -89,7 +89,7 @@ type Action
     | DragLeave -- user leaves drop zone
     | Drop (List NativeFile)
 
-{-| Simple update method that updates the HoverState from an Action.
+{-| Updates the Model from an Action.
 -}
 update : Action -> Model -> Model
 update action model =
