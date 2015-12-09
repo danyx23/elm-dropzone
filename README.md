@@ -8,7 +8,7 @@ A full example of how to use this library is provided in the FileReader library.
 
 ### Store the DropZone.Model as part of your model
 
-```Elm
+```elm
 type alias Model =
     { dropZone : DropZone.Model -- this is the dropzone model you need to store
     , ... -- other parts of your model
@@ -22,7 +22,7 @@ init =
 ```
 
 ### Update the DropZone.Model as part of your update function
-```Elm
+```elm
 type Action
     = DropZoneAction DropZone.Action
     | .. -- other actions
@@ -30,16 +30,20 @@ type Action
 update : Action -> Model -> (Model, Effects Action)
 update action model =
     case action of
-        DropZoneAction (Drop files) -> -- Drop is the only action that you will want to handle yourself as well
-            ( { model
-              | dropZone = DropZone.update (Drop files) model.dropZone   -- Make sure to update the DropZone model
+        -- Drop is the only action that you will want to handle yourself as well
+        DropZoneAction (Drop files) -> 
+            ( { model -- Make sure to update the DropZone model
+              | dropZone = DropZone.update (Drop files) model.dropZone   
               , .. -- maybe store the files in your own model
               }
             , Effects.batch <|
-                List.map (readTextFile << .blob) files -- in this example the dropped files are all read with FileReader.readTextFile
+                List.map (readTextFile << .blob) files 
+              -- in this example the dropped files are all read 
+              -- with FileReader.readTextFile
             )
         DropZoneAction a ->  
-            -- These are the other DropZone actions that are not exposed, but you still need to hand it to DropZone.update so 
+            -- These are the other DropZone actions that are not exposed, 
+            -- but you still need to hand it to DropZone.update so 
             -- the DropZone model stays consistent
             ( { model | dropZone = DropZone.update a model.dropZone }
             , Effects.none
@@ -56,7 +60,7 @@ differently when the user is hovering over it with a DnD operation.
 dropZoneEventHandlers takes a Json.decoder to extract the "payload" from the native JS drop event.
 We use the FileReader.parseDroppedFiles here to extract a List of native JS File objects.
 
-```Elm
+```elm
 -- Write a function that renders your dropzone and use dropzoneEventHandlers to 
 -- turn it into a dropzone. 
 dropZoneView : Signal.Address Action -> Model -> Html
