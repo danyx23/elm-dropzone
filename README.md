@@ -2,9 +2,11 @@
 
 Provides helpers to make it easy to add a "dropzone" into a webapp and pass the the dropped files onto the [FileReader library](https://github.com/simonh1000/file-reader) to read.
 
-The library does not have a dependency on FileReader but at the moment using it with FileReader is the primary intended use case.
+The library does not yet have a dependency on FileReader because FileReader has not passed native review yet. At the moment using it with FileReader is the primary intended use case.
 
-A full example of how to use this library is provided in the FileReader library. The main points are:
+A full example of how to use this library is provided in the examples folder. Please note that you have to clone the filereader library manually into the examples folder. 
+
+There are 3 basic steps to get DropZone working in your application:
 
 ### Store the DropZone.Model as part of your model
 
@@ -24,7 +26,7 @@ init =
 ### Update the DropZone.Model as part of your update function
 ```elm
 type Action
-    = DropZoneAction DropZone.Action
+    = DropZoneAction (DropZone.Action (List FileReader.NativeFile)) 
     | .. -- other actions
 
 update : Action -> Model -> (Model, Effects Action)
