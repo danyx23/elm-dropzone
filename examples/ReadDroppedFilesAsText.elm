@@ -1,11 +1,10 @@
 module Main exposing (..)
 
-import Html exposing (Html, div, input, button, h1, p, text)
-import Html.Attributes exposing (type', id, style)
-import Html.App
-import Task
-import FileReader exposing (FileRef, NativeFile, readAsTextFile, Error(..))
 import DropZone exposing (DropZoneMessage(Drop), dropZoneEventHandlers, isHovering)
+import FileReader exposing (Error(..), FileRef, NativeFile, readAsTextFile)
+import Html exposing (Html, button, div, h1, input, p, text)
+import Html.Attributes exposing (id, style, type_)
+import Task
 
 
 {- Attention! For this example to work you need to have a copy of simonh1000/filereader
@@ -25,7 +24,8 @@ type alias Model =
     { message : String
     , dropZone :
         DropZone.Model
-        -- store the DropZone model in your apps Model
+
+    -- store the DropZone model in your apps Model
     , files : List NativeFile
     , contents : List String
     }
@@ -36,7 +36,8 @@ init =
     { message = "Waiting..."
     , dropZone =
         DropZone.init
-        -- call DropZone.init to initialize
+
+    -- call DropZone.init to initialize
     , files = []
     , contents = []
     }
@@ -49,7 +50,7 @@ init =
 type Action
     = DnD (DropZone.DropZoneMessage (List NativeFile))
       -- add an Action that takes care of hovering, dropping etc
-    | FileReadSucceeded ( String, String )
+    | FileReadSucceeded String
     | FileReadFailed FileReader.Error
 
 
@@ -61,14 +62,16 @@ update action model =
             ( { model
                 | dropZone =
                     DropZone.update (Drop files) model.dropZone
-                    -- update the DropZone model
+
+                -- update the DropZone model
                 , files =
                     files
-                    -- and store the dropped files
+
+                -- and store the dropped files
               }
-            , Cmd.batch
-                <| -- also create a bunch of effects to read the files as text, one effect for each file
-                   List.map (readTextFile << .blob) files
+            , Cmd.batch <|
+                -- also create a bunch of effects to read the files as text, one effect for each file
+                List.map (readTextFile << .blob) files
             )
 
         DnD a ->
@@ -77,7 +80,7 @@ update action model =
             , Cmd.none
             )
 
-        FileReadSucceeded ( modificationDate, str ) ->
+        FileReadSucceeded str ->
             -- this happens when an effect has finished and the file has successfully been loaded
             ( { model
                 | contents = str :: model.contents
@@ -88,7 +91,7 @@ update action model =
 
         FileReadFailed err ->
             -- this happens when an effect has finished and there was an error loading hte file
-            ( { model | message = FileReader.toString err }
+            ( { model | message = FileReader.prettyPrint err }
             , Cmd.none
             )
 
@@ -101,15 +104,16 @@ view : Model -> Html Action
 view model =
     div [ containerStyles ]
         [ h1 [] [ text "Drag 'n Drop" ]
-        , renderDropZone (model.dropZone)
-          -- render the dropzone
+        , renderDropZone model.dropZone
+
+        -- render the dropzone
         , div []
             -- list the files that were dropped
             [ text <| "Files: " ++ commaSeparate (List.map .name model.files)
             ]
-        , div []
-            <| -- and the contents
-               [ text <| "Content: " ++ commaSeparate model.contents ]
+        , div [] <|
+            -- and the contents
+            [ text <| "Content: " ++ commaSeparate model.contents ]
         , p [] [ text model.message ]
         ]
 
@@ -121,7 +125,7 @@ commaSeparate lst =
 
 renderDropZone : DropZone.Model -> Html Action
 renderDropZone dropZoneModel =
-    Html.App.map DnD
+    Html.map DnD
         (div (renderZoneAttributes dropZoneModel) [])
 
 
@@ -169,23 +173,31 @@ dropZoneHover =
 readTextFile : FileRef -> Cmd Action
 readTextFile fileValue =
     readAsTextFile fileValue
-        |> Task.perform FileReadFailed FileReadSucceeded
+        |> Task.attempt
+            (\res ->
+                case res of
+                    Ok val ->
+                        FileReadSucceeded val
+
+                    Err error ->
+                        FileReadFailed error
+            )
 
 
 
 -- ----------------------------------
 
 
-app : Program Never
+app : Program Never Model Action
 app =
-    Html.App.program
+    Html.program
         { init = ( init, Cmd.none )
         , update = update
         , view = view
-        , subscriptions = (\_ -> Sub.none)
+        , subscriptions = \_ -> Sub.none
         }
 
 
-main : Program Never
+main : Program Never Model Action
 main =
     app
