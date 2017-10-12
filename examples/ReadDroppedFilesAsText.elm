@@ -47,16 +47,16 @@ init =
 -- UPDATE
 
 
-type Action
+type Message
     = DnD (DropZone.DropZoneMessage (List NativeFile))
-      -- add an Action that takes care of hovering, dropping etc
+      -- add an Message that takes care of hovering, dropping etc
     | FileReadSucceeded String
     | FileReadFailed FileReader.Error
 
 
-update : Action -> Model -> ( Model, Cmd Action )
-update action model =
-    case action of
+update : Message -> Model -> ( Model, Cmd Message )
+update message model =
+    case message of
         DnD (Drop files) ->
             -- this happens when the user dropped something into the dropzone
             ( { model
@@ -75,7 +75,7 @@ update action model =
             )
 
         DnD a ->
-            -- these are opaque DropZone actions, just hand them to DropZone to deal with them
+            -- these are opaque DropZone messages, just hand them to DropZone to deal with them
             ( { model | dropZone = DropZone.update a model.dropZone }
             , Cmd.none
             )
@@ -100,7 +100,7 @@ update action model =
 -- VIEW
 
 
-view : Model -> Html Action
+view : Model -> Html Message
 view model =
     div [ containerStyles ]
         [ h1 [] [ text "Drag 'n Drop" ]
@@ -123,7 +123,7 @@ commaSeparate lst =
     List.foldl (++) "" (List.intersperse ", " lst)
 
 
-renderDropZone : DropZone.Model -> Html Action
+renderDropZone : DropZone.Model -> Html Message
 renderDropZone dropZoneModel =
     Html.map DnD
         (div (renderZoneAttributes dropZoneModel) [])
@@ -170,7 +170,7 @@ dropZoneHover =
 -- TASKS
 
 
-readTextFile : FileRef -> Cmd Action
+readTextFile : FileRef -> Cmd Message
 readTextFile fileValue =
     readAsTextFile fileValue
         |> Task.attempt
@@ -188,7 +188,7 @@ readTextFile fileValue =
 -- ----------------------------------
 
 
-app : Program Never Model Action
+app : Program Never Model Message
 app =
     Html.program
         { init = ( init, Cmd.none )
@@ -198,6 +198,6 @@ app =
         }
 
 
-main : Program Never Model Action
+main : Program Never Model Message
 main =
     app

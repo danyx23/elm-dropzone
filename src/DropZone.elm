@@ -11,17 +11,26 @@ module DropZone
 {-| This library makes it easier to use Html5 Drag/Drop events when you want
 to support dropping of files into a webpage.
 
+
 # Main DnD support
+
 @docs dropZoneEventHandlers
 
+
 # Drop action
+
 @docs DropZoneMessage
 
+
 # Model
+
 @docs Model
 
+
 # Helper functions
+
 @docs init, update, isHovering
+
 -}
 
 import Html exposing (Attribute)
@@ -41,6 +50,7 @@ states are Normal and Hovering.
           text "Drag files here"
         Hovering ->
           text "Yes, drop them now!"
+
 -}
 type HoverState
     = Normal
@@ -52,7 +62,8 @@ type HoverState
 type alias Model =
     { hoverState :
         HoverState
-        -- set to Hovering if the user is hovering with content over the drop zone
+
+    -- set to Hovering if the user is hovering with content over the drop zone
     }
 
 
@@ -73,6 +84,7 @@ to the update function of the DropZone
         )
         ::
         dragDropEventHandlers payloadDecoder)
+
 -}
 isHovering : Model -> Bool
 isHovering model =
@@ -104,7 +116,7 @@ type DropZoneMessage a
 
 {-| Updates the Model from a DropZoneMessage.
 -}
-update : DropZoneMessage a -> Model -> Model
+update : DropZoneMessage msg -> Model -> Model
 update action model =
     case action of
         DragEnter ->
@@ -113,7 +125,7 @@ update action model =
         DragLeave ->
             { model | hoverState = Normal }
 
-        Drop a ->
+        Drop msg ->
             { model | hoverState = Normal }
 
 
@@ -123,24 +135,20 @@ update action model =
 The Json.Decoder you pass in is used to extract the data from the drop operation.
 If the drop operation is a user dropping files in a browser, you will want to
 extract the .dataTransfer.files content. The FileReader project
-( https://github.com/simonh1000/file-reader ) provides a convinience function
+( <https://github.com/simonh1000/file-reader> ) provides a convinience function
 `parseDroppedFiles` to do this for you.
 
-    -- Example view, renders a div that acts as a dropzone by
-    -- adding the dragDropEventHandlers. Note that DropZoneMessage
-    -- would be one of your components Messages, tagged with
-    -- the Message of the Dropzone. Since we pass just a dummy Json.value
-    -- decoder, the Drop action will be tagged with this. A real example
-    -- may want to use parseDroppedFiles
     view : Message -> Model -> Html
     view address model =
         div
-        (  dropZoneStyle model.dropZoneModel
-        :: dragDropEventHandlers (Json.value) )
-        [ renderImageOrPrompt model
-        ]
+            (dropZoneStyle model.dropZoneModel
+                :: dragDropEventHandlers (Json.value)
+            )
+            [ renderImageOrPrompt model
+            ]
+
 -}
-dropZoneEventHandlers : Json.Decoder a -> List (Attribute (DropZoneMessage a))
+dropZoneEventHandlers : Json.Decoder msg -> List (Attribute (DropZoneMessage msg))
 dropZoneEventHandlers decoder =
     [ onDragEnter DragEnter
     , onDragLeave DragLeave
@@ -153,35 +161,35 @@ dropZoneEventHandlers decoder =
 -- Individual handler functions
 
 
-onDragFunctionIgnoreFiles : String -> a -> Attribute a
+onDragFunctionIgnoreFiles : String -> msg -> Attribute msg
 onDragFunctionIgnoreFiles nativeEventName action =
     onWithOptions nativeEventName
         { stopPropagation = False, preventDefault = True }
         (Json.succeed action)
 
 
-onDragFunctionDecodeFiles : String -> Json.Decoder (DropZoneMessage a) -> Attribute (DropZoneMessage a)
+onDragFunctionDecodeFiles : String -> Json.Decoder (DropZoneMessage msg) -> Attribute (DropZoneMessage msg)
 onDragFunctionDecodeFiles nativeEventName decoder =
     onWithOptions nativeEventName
         { stopPropagation = True, preventDefault = True }
         decoder
 
 
-onDragEnter : a -> Attribute a
+onDragEnter : msg -> Attribute msg
 onDragEnter =
     onDragFunctionIgnoreFiles "dragenter"
 
 
-onDragOver : a -> Attribute a
+onDragOver : msg -> Attribute msg
 onDragOver =
     onDragFunctionIgnoreFiles "dragover"
 
 
-onDragLeave : a -> Attribute a
+onDragLeave : msg -> Attribute msg
 onDragLeave =
     onDragFunctionIgnoreFiles "dragleave"
 
 
-onDrop : Json.Decoder a -> Attribute (DropZoneMessage a)
+onDrop : Json.Decoder msg -> Attribute (DropZoneMessage msg)
 onDrop decoder =
     onDragFunctionDecodeFiles "drop" (map (\userVal -> Drop userVal) decoder)
